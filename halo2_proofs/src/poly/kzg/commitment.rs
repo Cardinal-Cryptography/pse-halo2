@@ -94,7 +94,7 @@ where
         }
         let n_inv = E::Scalar::from(n)
             .invert()
-            .expect("inversion should be ok for n = 1<<k");
+            .unwrap(); // ("inversion should be ok for n = 1<<k")
         let multiplier = (s.pow_vartime([n]) - E::Scalar::ONE) * n_inv;
         parallelize(&mut g_lagrange_projective, |g, start| {
             for (idx, g) in g.iter_mut().enumerate() {
