@@ -26,6 +26,23 @@ pub struct ParamsKZG<E: Engine> {
     pub(crate) s_g2: E::G2Affine,
 }
 
+#[cfg(feature = "substrate")]
+impl<E: Engine> ParamsKZG<E> {
+    /// Provides a mock that will do for GWC verifier.
+    pub fn mock(k: u32) -> Self {
+        let g2 = E::G2Affine::generator();
+
+        Self {
+            k,
+            n: 1 << k,
+            g: vec![E::G1Affine::generator()],
+            g_lagrange: vec![],
+            g2,
+            s_g2: g2,
+        }
+    }
+}
+
 /// Umbrella commitment scheme construction for all KZG variants
 #[derive(Debug)]
 pub struct KZGCommitmentScheme<E: Engine> {
