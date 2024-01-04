@@ -19,7 +19,6 @@ pub mod transcript;
 pub mod dev;
 mod helpers;
 
-#[cfg(feature = "substrate")]
 pub mod standard_plonk;
 
 pub use helpers::SerdeFormat;

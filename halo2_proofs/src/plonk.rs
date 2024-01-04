@@ -46,7 +46,6 @@ use std::io;
 /// This is a verifying key which allows for the verification of proofs for a
 /// particular circuit.
 #[derive(Clone, Debug)]
-#[cfg_attr(feature = "substrate", derive(codec::Decode, codec::Encode))]
 pub struct VerifyingKey<C: CurveAffine> {
     domain: EvaluationDomain<C::Scalar>,
     fixed_commitments: Vec<C>,
