@@ -70,7 +70,7 @@ impl Argument {
         // will never underflow because of the requirement of at least a degree
         // 3 circuit for the permutation argument.
         assert!(pk.vk.cs_degree >= 3);
-        let chunk_len = pk.vk.cs_degree - 2;
+        let chunk_len = (pk.vk.cs_degree - 2) as usize;
         let blinding_factors = pk.vk.cs.blinding_factors();
 
         // Each column gets its own delta power.

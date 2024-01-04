@@ -45,14 +45,14 @@ use std::io;
 
 /// This is a verifying key which allows for the verification of proofs for a
 /// particular circuit.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, codec::Decode, codec::Encode)]
 pub struct VerifyingKey<C: CurveAffine> {
     domain: EvaluationDomain<C::Scalar>,
     fixed_commitments: Vec<C>,
     permutation: permutation::VerifyingKey<C>,
     cs: ConstraintSystem<C::Scalar>,
     /// Cached maximum degree of `cs` (which doesn't change after construction).
-    cs_degree: usize,
+    cs_degree: u64,
     /// The representative of this `VerifyingKey` in transcripts.
     transcript_repr: C::Scalar,
     selectors: Vec<Vec<bool>>,
@@ -235,7 +235,7 @@ impl<C: CurveAffine> VerifyingKey<C> {
             fixed_commitments,
             permutation,
             cs,
-            cs_degree,
+            cs_degree: cs_degree as u64,
             // Temporary, this is not pinned.
             transcript_repr: C::Scalar::ZERO,
             selectors,
