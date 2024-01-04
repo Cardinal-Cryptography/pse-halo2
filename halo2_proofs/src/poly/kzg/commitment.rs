@@ -29,8 +29,9 @@ pub struct ParamsKZG<E: Engine> {
 #[cfg(feature = "substrate")]
 impl<E: Engine> ParamsKZG<E> {
     /// Provides a mock that will do for GWC verifier.
-    pub fn mock(k: u32) -> Self {
+    pub fn mock<R: RngCore>(k: u32, rng: R) -> Self {
         let g2 = E::G2Affine::generator();
+        let s = <E::Scalar>::random(rng);
 
         Self {
             k,
@@ -38,7 +39,7 @@ impl<E: Engine> ParamsKZG<E> {
             g: vec![E::G1Affine::generator()],
             g_lagrange: vec![],
             g2,
-            s_g2: g2,
+            s_g2: (g2 * s).into(),
         }
     }
 }
