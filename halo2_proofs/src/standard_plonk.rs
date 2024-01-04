@@ -32,10 +32,15 @@ pub struct StandardPlonkConfig<Fr> {
 impl<Fr: Field> StandardPlonkConfig<Fr> {
     fn configure(meta: &mut ConstraintSystem<Fr>) -> Self {
         let [a, b, c] = [(); 3].map(|_| meta.advice_column());
-        let [q_a, q_b, q_c, q_ab, constant] = [(); 5].map(|_| meta.fixed_column());
+        let [q_a, q_b, q_c, q_ab, constant] = [(); 5].map(|_| {
+            let col = meta.fixed_column();
+            meta.enable_equality(col);
+            col
+        });
         let instance = meta.instance_column();
 
         [a, b, c].map(|column| meta.enable_equality(column));
+        meta.enable_equality(instance);
 
         meta.create_gate(
             "q_a·a + q_b·b + q_c·c + q_ab·a·b + constant + instance = 0",
