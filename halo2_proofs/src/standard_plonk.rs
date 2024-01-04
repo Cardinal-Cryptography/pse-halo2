@@ -1,40 +1,73 @@
 //! Simple standard Plonk circuit configuration. Helpful for deserializing verification keys.
 
+use core::marker::PhantomData;
 use ff::Field;
 
 use crate::{
     circuit::{Layouter, SimpleFloorPlanner},
     plonk::{
-        Circuit,
-        ConstraintSystem, Error,
+        Advice, Circuit, Column, ConstraintSystem,
+        Error,
+        Fixed, Instance,
     },
     poly::Rotation,
 };
 
-fn configure_circuit<Fr: Field>(meta: &mut ConstraintSystem<Fr>) {
-    let [a, b, c] = [(); 3].map(|_| meta.advice_column());
-    let [q_a, q_b, q_c, q_ab, constant] = [(); 5].map(|_| meta.fixed_column());
-    let instance = meta.instance_column();
+/// Standard Plonk circuit configuration.
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+#[allow(missing_docs)]
+pub struct StandardPlonkConfig<Fr> {
+    pub a: Column<Advice>,
+    pub b: Column<Advice>,
+    pub c: Column<Advice>,
+    pub q_a: Column<Fixed>,
+    pub q_b: Column<Fixed>,
+    pub q_c: Column<Fixed>,
+    pub q_ab: Column<Fixed>,
+    pub constant: Column<Fixed>,
+    pub instance: Column<Instance>,
+    _phantom: PhantomData<Fr>,
+}
 
-    [a, b, c].map(|column| meta.enable_equality(column));
+impl<Fr: Field> StandardPlonkConfig<Fr> {
+    fn configure(meta: &mut ConstraintSystem<Fr>) -> Self {
+        let [a, b, c] = [(); 3].map(|_| meta.advice_column());
+        let [q_a, q_b, q_c, q_ab, constant] = [(); 5].map(|_| meta.fixed_column());
+        let instance = meta.instance_column();
 
-    meta.create_gate(
-        "q_a·a + q_b·b + q_c·c + q_ab·a·b + constant + instance = 0",
-        |meta| {
-            let [a, b, c] = [a, b, c].map(|column| meta.query_advice(column, Rotation::cur()));
-            let [q_a, q_b, q_c, q_ab, constant] = [q_a, q_b, q_c, q_ab, constant]
-                .map(|column| meta.query_fixed(column, Rotation::cur()));
-            let instance = meta.query_instance(instance, Rotation::cur());
-            Some(
-                q_a * a.clone()
-                    + q_b * b.clone()
-                    + q_c * c
-                    + q_ab * a * b
-                    + constant
-                    + instance,
-            )
-        },
-    );
+        [a, b, c].map(|column| meta.enable_equality(column));
+
+        meta.create_gate(
+            "q_a·a + q_b·b + q_c·c + q_ab·a·b + constant + instance = 0",
+            |meta| {
+                let [a, b, c] = [a, b, c].map(|column| meta.query_advice(column, Rotation::cur()));
+                let [q_a, q_b, q_c, q_ab, constant] = [q_a, q_b, q_c, q_ab, constant]
+                    .map(|column| meta.query_fixed(column, Rotation::cur()));
+                let instance = meta.query_instance(instance, Rotation::cur());
+                Some(
+                    q_a * a.clone()
+                        + q_b * b.clone()
+                        + q_c * c
+                        + q_ab * a * b
+                        + constant
+                        + instance,
+                )
+            },
+        );
+
+        StandardPlonkConfig {
+            a,
+            b,
+            c,
+            q_a,
+            q_b,
+            q_c,
+            q_ab,
+            constant,
+            instance,
+            _phantom: PhantomData,
+        }
+    }
 }
 
 /// Standard Plonk circuit. Warning: usable only for a configuration phase!
@@ -42,7 +75,7 @@ fn configure_circuit<Fr: Field>(meta: &mut ConstraintSystem<Fr>) {
 pub struct StandardPlonk;
 
 impl<Fr: Field> Circuit<Fr> for StandardPlonk {
-    type Config = ();
+    type Config = StandardPlonkConfig<Fr>;
     type FloorPlanner = SimpleFloorPlanner;
 
     fn without_witnesses(&self) -> Self {
@@ -50,7 +83,7 @@ impl<Fr: Field> Circuit<Fr> for StandardPlonk {
     }
 
     fn configure(meta: &mut ConstraintSystem<Fr>) -> Self::Config {
-        configure_circuit(meta)
+        StandardPlonkConfig::configure(meta)
     }
 
     fn synthesize(
