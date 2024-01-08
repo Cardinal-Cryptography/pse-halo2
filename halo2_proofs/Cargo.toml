@@ -52,13 +52,17 @@ backtrace = { version = "0.3", optional = true }
 ff = "0.13"
 group = "0.13"
 halo2curves = { version = "0.6.0", default-features = false }
+rand = { version = "0.8.5", default-features = false, features = [
+    "small_rng",
+], optional = true }
 rand_core = { version = "0.6", default-features = false }
 tracing = "0.1"
 blake2b_simd = "1" # MSRV 1.66.0
 sha3 = "0.9.1"
 rand_chacha = "0.3"
+maybe-rayon = { version = "0.1.0", default-features = false }
 serde = { version = "1", optional = true, features = ["derive"] }
-serde_derive = { version = "1", optional = true}
+serde_derive = { version = "1", optional = true }
 rayon = "1.8"
 
 # Developer tooling dependencies
@@ -73,14 +77,17 @@ assert_matches = "1.5"
 criterion = "0.3"
 gumdrop = "0.8"
 proptest = "1"
-rand_core = { version = "0.6", default-features = false, features = ["getrandom"] }
+rand_core = { version = "0.6", default-features = false, features = [
+    "getrandom",
+] }
 serde_json = "1"
 
 [target.'cfg(all(target_arch = "wasm32", target_os = "unknown"))'.dev-dependencies]
 getrandom = { version = "0.2", features = ["js"] }
 
 [features]
-default = ["batch", "bits"]
+default = ["batch", "bits", "multicore"]
+multicore = ["maybe-rayon/threads"]
 dev-graph = ["plotters", "tabbycat"]
 test-dev-graph = [
     "dev-graph",
@@ -95,6 +102,7 @@ sanity-checks = []
 batch = ["rand_core/getrandom"]
 circuit-params = []
 cost-estimator = ["serde", "serde_derive"]
+mock-kzg-params = ["rand"]
 derive_serde = ["halo2curves/derive_serde"]
 
 [lib]
