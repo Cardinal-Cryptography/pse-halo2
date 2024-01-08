@@ -18,4 +18,7 @@ pub mod transcript;
 
 pub mod dev;
 mod helpers;
+
+pub mod standard_plonk;
+
 pub use helpers::SerdeFormat;
