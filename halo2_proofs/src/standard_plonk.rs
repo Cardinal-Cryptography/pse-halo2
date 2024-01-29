@@ -5,11 +5,7 @@ use ff::Field;
 
 use crate::{
     circuit::{Layouter, SimpleFloorPlanner},
-    plonk::{
-        Advice, Circuit, Column, ConstraintSystem,
-        Error,
-        Fixed, Instance,
-    },
+    plonk::{Advice, Circuit, Column, ConstraintSystem, Error, Fixed, Instance},
     poly::Rotation,
 };
 
@@ -82,20 +78,31 @@ pub struct StandardPlonk;
 impl<Fr: Field> Circuit<Fr> for StandardPlonk {
     type Config = StandardPlonkConfig<Fr>;
     type FloorPlanner = SimpleFloorPlanner;
+    #[cfg(feature = "circuit-params")]
+    type Params = ();
+
+    #[cfg(feature = "circuit-params")]
+    fn params(&self) -> Self::Params {
+        Self::Params::default()
+    }
 
     fn without_witnesses(&self) -> Self {
         Self::default()
+    }
+
+    #[cfg(feature = "circuit-params")]
+    fn configure_with_params(
+        meta: &mut ConstraintSystem<Fr>,
+        _params: Self::Params,
+    ) -> Self::Config {
+        Self::configure(meta)
     }
 
     fn configure(meta: &mut ConstraintSystem<Fr>) -> Self::Config {
         StandardPlonkConfig::configure(meta)
     }
 
-    fn synthesize(
-        &self,
-        _: Self::Config,
-        _: impl Layouter<Fr>,
-    ) -> Result<(), Error> {
+    fn synthesize(&self, _: Self::Config, _: impl Layouter<Fr>) -> Result<(), Error> {
         unreachable!("`StandardPlonk` is intended only for a configuration purposes")
     }
 }
