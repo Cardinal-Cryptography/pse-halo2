@@ -32,7 +32,7 @@ impl<E: Engine> ParamsKZG<E> {
     /// Provides a params mock that will do for all verifiers for which `<V as Verifier>::QUERY_INSTANCE` is `false`.
     pub fn mock(k: u32) -> Self {
         let g2 = E::G2Affine::generator();
-        let s = <E::Scalar>::random(Self::mock_rng());
+        let s = <E::Fr>::random(Self::mock_rng());
 
         Self {
             k,
