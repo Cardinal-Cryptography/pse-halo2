@@ -53,6 +53,9 @@ pub fn create_proof<
 where
     Scheme::Scalar: WithSmallOrderMulGroup<3> + FromUniformBytes<64>,
 {
+    let now = || std::time::Instant::now();
+    let proving_start = now();
+
     if circuits.len() != instances.len() {
         return Err(Error::InvalidInstances);
     }
@@ -288,6 +291,9 @@ where
         }
     }
 
+    let mut witness_generation_start = now();
+    let mut witness_generation_end = now();
+
     let (advice, challenges) = {
         let mut advice = vec![
             AdviceSingle::<Scheme::Curve, LagrangeCoeff> {
@@ -332,12 +338,14 @@ where
                 };
 
                 // Synthesize the circuit to obtain the witness and other information.
+                witness_generation_start = now();
                 ConcreteCircuit::FloorPlanner::synthesize(
                     &mut witness,
                     circuit,
                     config.clone(),
                     meta.constants.clone(),
                 )?;
+                witness_generation_end = now();
 
                 let mut advice_values = batch_invert_assigned::<Scheme::Scalar>(
                     witness
@@ -708,9 +716,18 @@ where
         .chain(vanishing.open(x));
 
     let prover = P::new(params);
-    prover
+    let result = prover
         .create_proof(rng, transcript, instances)
-        .map_err(|_| Error::ConstraintSystemFailure)
+        .map_err(|_| Error::ConstraintSystemFailure);
+
+    let proving_end = now();
+
+    let proving_time = proving_end - proving_start;
+    let witness_generation_time = witness_generation_end - witness_generation_start;
+    println!("Proving time: {:?}", proving_time);
+    println!("Witness generation time: {:?} ({:.0}%)", witness_generation_time, witness_generation_time.as_nanos() as f64 / proving_time.as_nanos() as f64 * 100.0);
+
+    result
 }
 
 #[test]
