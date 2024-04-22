@@ -121,7 +121,7 @@ where
         let n_inv = E::Fr::from(n)
             .invert()
             .unwrap(); // ("inversion should be ok for n = 1<<k")
-        let multiplier = (s.pow_vartime([n]) - E::Scalar::ONE) * n_inv;
+        let multiplier = (s.pow_vartime([n]) - E::Fr::ONE) * n_inv;
         parallelize(&mut g_lagrange_projective, |g, start| {
             for (idx, g) in g.iter_mut().enumerate() {
                 let offset = start + idx;
