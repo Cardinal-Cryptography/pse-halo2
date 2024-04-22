@@ -51,7 +51,7 @@ harness = false
 backtrace = { version = "0.3", optional = true }
 ff = "0.13"
 group = "0.13"
-halo2curves = { git = "https://github.com/privacy-scaling-explorations/halo2curves", branch = "support_bls12-381", default-features = false }
+halo2curves = { git = "https://github.com/kroist/halo2curves", branch = "support_bls12-381", default-features = false }
 rand_core = { version = "0.6", default-features = false }
 tracing = "0.1"
 blake2b_simd = "1" # MSRV 1.66.0
