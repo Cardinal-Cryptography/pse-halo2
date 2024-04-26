@@ -93,6 +93,7 @@ impl<'a, F: Field, CS: Assignment<F> + 'a + SyncDeps> Layouter<F>
             let region: &mut dyn RegionLayouter<F> = &mut shape;
             assignment(region.into())?;
         }
+        println!("{} out of {}; {} x {}", shape.used_cells.len(), shape.row_count * shape.columns.len(), shape.row_count, shape.columns.len());
 
         // Lay out this region. We implement the simplest approach here: position the
         // region starting at the earliest row for which none of the columns are in use.

@@ -141,6 +141,7 @@ pub struct RegionShape {
     pub(super) region_index: RegionIndex,
     pub(super) columns: HashSet<RegionColumn>,
     pub(super) row_count: usize,
+    pub(super) used_cells: HashSet<(RegionColumn, usize)>,
 }
 
 /// The virtual column involved in a region. This includes concrete columns,
@@ -189,6 +190,7 @@ impl RegionShape {
             region_index,
             columns: HashSet::default(),
             row_count: 0,
+            used_cells: HashSet::default(),
         }
     }
 
@@ -206,6 +208,11 @@ impl RegionShape {
     pub fn row_count(&self) -> usize {
         self.row_count
     }
+
+    /// Get the `used_cells` of a `RegionShape`.
+    pub fn used_cells(&self) -> &HashSet<(RegionColumn, usize)> {
+        &self.used_cells
+    }
 }
 
 impl<F: Field> RegionLayouter<F> for RegionShape {
@@ -218,6 +225,7 @@ impl<F: Field> RegionLayouter<F> for RegionShape {
         // Track the selector's fixed column as part of the region's shape.
         self.columns.insert((*selector).into());
         self.row_count = cmp::max(self.row_count, offset + 1);
+        self.used_cells.insert(((*selector).into(), offset));
         Ok(())
     }
 
@@ -230,6 +238,7 @@ impl<F: Field> RegionLayouter<F> for RegionShape {
     ) -> Result<Cell, Error> {
         self.columns.insert(Column::<Any>::from(column).into());
         self.row_count = cmp::max(self.row_count, offset + 1);
+        self.used_cells.insert((Column::<Any>::from(column).into(), offset));
 
         Ok(Cell {
             region_index: self.region_index,
@@ -259,6 +268,7 @@ impl<F: Field> RegionLayouter<F> for RegionShape {
     ) -> Result<(Cell, Value<F>), Error> {
         self.columns.insert(Column::<Any>::from(advice).into());
         self.row_count = cmp::max(self.row_count, offset + 1);
+        self.used_cells.insert((Column::<Any>::from(advice).into(), offset));
 
         Ok((
             Cell {
@@ -287,6 +297,7 @@ impl<F: Field> RegionLayouter<F> for RegionShape {
     ) -> Result<Cell, Error> {
         self.columns.insert(Column::<Any>::from(column).into());
         self.row_count = cmp::max(self.row_count, offset + 1);
+        self.used_cells.insert((Column::<Any>::from(column).into(), offset));
 
         Ok(Cell {
             region_index: self.region_index,
